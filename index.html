@@ -123,8 +123,19 @@
       return driverIds.map(id => driverMap.get(id)).filter(Boolean);
     }
 
+    // Helper function for ordinal suffix
+    function getOrdinal(n) {
+      if (n > 3 && n < 21) return n + 'th';
+      switch (n % 10) {
+        case 1: return n + 'st';
+        case 2: return n + 'nd';
+        case 3: return n + 'rd';
+        default: return n + 'th';
+      }
+    }
+
     // Driver Row Component
-    function DriverRow({ driver, position, racePoints, totalPoints, championshipPosition }) {
+    function DriverRow({ driver, position, racePoints, totalPoints, originalPosition, championshipPosition }) {
       // Podium colors based on CHAMPIONSHIP standing (after race points)
       const podiumStyles = {
         1: 'border-l-4 border-gold bg-gradient-to-r from-yellow-900/40 to-transparent ring-2 ring-gold/30',
@@ -176,15 +187,27 @@
           <!-- Points -->
           <div class="flex-shrink-0 flex items-center gap-3 ml-2">
             <div class="text-right">
-              <span class="text-sm text-gray-400">${driver.points}</span>
-              <span class="text-sm ${racePoints > 0 ? 'text-green-400' : 'text-gray-500'}"> +${racePoints}</span>
+              <div>
+                <span class="text-sm text-gray-400">${driver.points}</span>
+                <span class="text-sm ${racePoints > 0 ? 'text-green-400' : 'text-gray-500'}"> +${racePoints}</span>
+              </div>
+              <div class="text-xs text-gray-500">${getOrdinal(originalPosition)}</div>
             </div>
-            <div class="text-2xl font-bold w-14 text-right ${
-              championshipPosition === 1 ? 'text-gold' :
-              championshipPosition === 2 ? 'text-silver' :
-              championshipPosition === 3 ? 'text-bronze' : 'text-white'
-            }">
-              ${totalPoints}
+            <div class="text-right w-14">
+              <div class="text-2xl font-bold ${
+                championshipPosition === 1 ? 'text-gold' :
+                championshipPosition === 2 ? 'text-silver' :
+                championshipPosition === 3 ? 'text-bronze' : 'text-white'
+              }">
+                ${totalPoints}
+              </div>
+              <div class="text-xs ${
+                championshipPosition === 1 ? 'text-gold' :
+                championshipPosition === 2 ? 'text-silver' :
+                championshipPosition === 3 ? 'text-bronze' : 'text-gray-400'
+              }">
+                ${getOrdinal(championshipPosition)}
+              </div>
             </div>
           </div>
         </div>
@@ -261,12 +284,19 @@
           <!-- Driver List -->
           <div ref=${listRef}>
             ${(() => {
+              // Create a map of driver ID to their original (pre-race) championship position
+              const originalPositions = new Map();
+              INITIAL_DRIVERS.forEach((driver, index) => {
+                originalPositions.set(driver.id, index + 1);
+              });
+
               // Calculate total points for each driver based on their race position
               const driversWithTotals = drivers.map((driver, index) => ({
                 ...driver,
                 racePosition: index + 1,
                 racePoints: RACE_POINTS[index],
-                totalPoints: driver.points + RACE_POINTS[index]
+                totalPoints: driver.points + RACE_POINTS[index],
+                originalPosition: originalPositions.get(driver.id)
               }));
 
               // Sort by total points to determine championship standings
@@ -285,6 +315,7 @@
                   position=${driver.racePosition}
                   racePoints=${driver.racePoints}
                   totalPoints=${driver.totalPoints}
+                  originalPosition=${driver.originalPosition}
                   championshipPosition=${championshipPositions.get(driver.id)}
                 />
               `);
