@@ -42,7 +42,7 @@
     .sortable-chosen {
       background: #374151;
     }
-    .driver-row {
+    .drag-handle {
       touch-action: none;
     }
   </style>
@@ -149,12 +149,12 @@
 
       return html`
         <div
-          class="driver-row flex items-center p-3 bg-gray-800 rounded-lg mb-2 cursor-grab active:cursor-grabbing ${podiumClass}"
+          class="driver-row flex items-center p-3 bg-gray-800 rounded-lg mb-2 ${podiumClass}"
           data-id="${driver.id}"
         >
           <!-- Drag Handle -->
-          <div class="flex-shrink-0 mr-3 text-gray-500">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <div class="drag-handle flex-shrink-0 mr-3 text-gray-500 cursor-grab active:cursor-grabbing p-1 -m-1">
+            <svg class="w-5 h-5 pointer-events-none" fill="currentColor" viewBox="0 0 20 20">
               <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
             </svg>
           </div>
@@ -205,6 +205,7 @@
         if (listRef.current && !sortableRef.current) {
           sortableRef.current = new Sortable(listRef.current, {
             animation: 150,
+            handle: '.drag-handle',
             ghostClass: 'sortable-ghost',
             chosenClass: 'sortable-chosen',
             onEnd: (evt) => {
